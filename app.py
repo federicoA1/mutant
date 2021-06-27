@@ -1,6 +1,6 @@
 import flask
 from flask import request, jsonify
-import json,hashlib,sqlite3
+import json,hashlib,sqlite3,os
 
 # This script might return false positives when the dna have long secuences of the same base, ie (longer than 4 rows/columns/diagonals with the same char): 
 #                       
@@ -20,6 +20,7 @@ def Install():
     con = sqlite3.connect('dna.db')
     con.execute('''CREATE TABLE IF NOT EXISTS dna
                (id INTEGER PRIMARY KEY AUTOINCREMENT, type INT,hash TEXT UNIQUE, dna text)''')
+    os.system("cp dna.db /tmp/dna.db")    
     return ('',200)              
 
 def AddDNA(DNAtype,DNAseq):
@@ -31,7 +32,7 @@ def AddDNA(DNAtype,DNAseq):
 
     #Returns:
     #    None.   
-    con = sqlite3.connect('dna.db')
+    con = sqlite3.connect('/tmp/dna.db')
     hash_object = hashlib.md5(DNAseq.encode()).hexdigest()
     con.execute("INSERT OR IGNORE INTO dna (type,dna,hash) VALUES(?,?,?)",(DNAtype,DNAseq,hash_object))
     con.commit()
@@ -44,7 +45,7 @@ def DNAInDB(DNAseq):
 
     #Returns:
     #    Type Of DNA(int):The type of the DNA.  
-    con = sqlite3.connect('dna.db')
+    con = sqlite3.connect('/tmp/dna.db')
     hash_object = hashlib.md5(DNAseq.encode()).hexdigest()
     cursor = con.cursor()
     cursor.execute("SELECT type FROM dna WHERE hash=?",(hash_object,))
@@ -129,7 +130,7 @@ def stats():
     countMutantDNA = 0
     countHumanDNA = 0
     # We can implement cache here so we only do the queries when it's necesary
-    con = sqlite3.connect('dna.db')
+    con = sqlite3.connect('/tmp/dna.db')
     cursor = con.cursor()
     cursor.execute("SELECT COUNT(*) as CountHumanDNA FROM dna WHERE type=1")
     row = cursor.fetchone()
