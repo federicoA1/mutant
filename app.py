@@ -1,4 +1,3 @@
-import numpy
 import flask
 from flask import request, jsonify
 import json,hashlib,sqlite3
